@@ -5,11 +5,15 @@ Gerencia a criptografia e descriptografia de dados sensíveis.
 """
 
 import os
+import base64
 
 from cryptography.fernet import Fernet
+from dotenv import load_dotenv
 
 from src.interfaces.encryption_service_interface import IEncryptionService
 from src.utils.log import log
+
+load_dotenv()
 
 
 class EncryptionService(IEncryptionService):
@@ -22,8 +26,29 @@ class EncryptionService(IEncryptionService):
         Args:
             encryption_key: Chave de criptografia. Se None, busca em CHAVE_CRIPTOGRAFIA
         """
-        self._key = str(os.environ.get("CHAVE_CRIPTOGRAFIA")).encode()
-        self._fernet = Fernet(self._key)
+        chave = os.environ.get("CHAVE_CRIPTOGRAFIA")
+        if not chave:
+            log.error("CHAVE_CRIPTOGRAFIA não definida nas variáveis de ambiente.")
+            raise ValueError("CHAVE_CRIPTOGRAFIA não definida.")
+
+        # Garante que a chave está em formato base64 url-safe e tem 32 bytes
+        try:
+            # Se a chave não for 32 bytes, faz o padding e codifica
+            if len(chave) != 44:  # 32 bytes base64 = 44 caracteres
+                chave_bytes = chave.encode()
+                chave_b64 = base64.urlsafe_b64encode(chave_bytes)
+                if len(chave_b64) != 44:
+                    log.error(
+                        "CHAVE_CRIPTOGRAFIA inválida: deve ser 32 bytes codificados em base64 url-safe."
+                    )
+                    raise ValueError("CHAVE_CRIPTOGRAFIA inválida para Fernet.")
+                self._key = chave_b64
+            else:
+                self._key = chave.encode()
+            self._fernet = Fernet(self._key)
+        except Exception as e:
+            log.error(f"Erro ao inicializar Fernet: {e}")
+            raise
 
     def encrypt(self, data: str) -> bytes:
         """

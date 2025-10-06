@@ -1,4 +1,4 @@
-import os
+import sys
 import time
 from typing import Any, Dict, List
 
@@ -6,11 +6,18 @@ import pandas as pd
 
 from datetime import datetime
 from src import api
+from src.utils.data import get_periodo_ultimos_dias, get_first_and_last_day_of_last_year
 from src.utils.log import log
 from src.factories.factory import Factory
 
 
-def get_vendas_ml(id: str, data_inicial: str, data_final: str):
+def get_vendas_ml(
+    id: str,
+    data_inicial: str,
+    data_final: str,
+    data_inicial_ano: str,
+    data_final_ano: str,
+) -> bool:
     repository = Factory().create_credentials_repository()
     erros = []
 
@@ -102,7 +109,27 @@ def get_vendas_ml(id: str, data_inicial: str, data_final: str):
             }
         )
 
+        repository.delete_sales_by_id_and_date(id, data_inicial_ano, data_final_ano)
         repository.delete_sales_by_id_and_date(id, data_inicial, data_final)
+
         repository.insert_sales_from_dataframe(df_vendas_ml)
 
     return True
+
+
+if __name__ == "__main__":
+    start_time = time.time()
+
+    # id = sys.argv[1]
+    # periodo = sys.argv[2]
+    # data_inicial_ano, data_final_ano = get_first_and_last_day_of_last_year()
+
+    # if periodo == "short":
+    #     data_anterior, data_posterior = get_periodo_ultimos_dias(7)
+    # else:
+    #     data_anterior, data_posterior = get_periodo_ultimos_dias(120)
+
+    # get_vendas_ml(id, data_anterior, data_posterior, data_inicial_ano, data_final_ano)
+
+    end_time = time.time()
+    print(f"Vendas ML requisitadas em {end_time - start_time:.2f} segundos")
