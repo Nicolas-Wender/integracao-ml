@@ -6,7 +6,7 @@ Define o contrato para persistência de credenciais.
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-
+import pandas as pd
 
 class ICredentialsRepository(ABC):
     """Interface para repositório de credenciais."""
@@ -53,5 +53,30 @@ class ICredentialsRepository(ABC):
 
         Args:
             id: Identificador da loja
+        """
+        pass
+
+    @abstractmethod
+    def delete_sales_by_id_and_date(
+        self, id: str, start_date: str, end_date: str
+    ) -> None:
+        """
+        Exclui registros da tabela sale_ml cujo id seja igual ao argumento e date_created esteja entre start_date e end_date.
+
+        Args:
+            id: Identificador do pedido
+            start_date: Data inicial (string, formato compatível com Supabase)
+            end_date: Data final (string, formato compatível com Supabase)
+        """
+
+        pass
+
+    @abstractmethod
+    def insert_sales_from_dataframe(self, df: pd.DataFrame) -> None:
+        """
+        Insere novos registros na tabela sales_ml a partir de um DataFrame do pandas.
+
+        Args:
+            df: DataFrame contendo os registros a serem inseridos
         """
         pass

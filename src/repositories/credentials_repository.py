@@ -197,3 +197,58 @@ class CredentialsRepository(ICredentialsRepository):
         except Exception as e:
             log.error(f"Erro ao limpar tokens para {id}: {str(e)}")
             raise
+
+    def delete_sales_by_id_and_date(
+        self, id: str, start_date: str, end_date: str
+    ) -> None:
+        """
+        Exclui registros da tabela sale_ml cujo id seja igual ao argumento e date_created esteja entre start_date e end_date.
+
+        Args:
+            id: Identificador do pedido
+            start_date: Data inicial (string, formato compatível com Supabase)
+            end_date: Data final (string, formato compatível com Supabase)
+        """
+        try:
+            response = (
+                self._supabase.table("sales_ml")
+                .delete()
+                .eq("id", id)
+                .gte("date_created", start_date)
+                .lte("date_created", end_date)
+                .execute()
+            )
+            if hasattr(response, "data") and response.data:  # type: ignore
+                log.info(
+                    f"Registros excluídos para id={id} entre {start_date} e {end_date}"
+                )
+            else:
+                log.warning(
+                    f"Nenhum registro excluído para id={id} entre {start_date} e {end_date}"
+                )
+        except Exception as e:
+            log.error(f"Erro ao excluir registros para id={id}: {str(e)}")
+            raise
+
+    def insert_sales_from_dataframe(self, df: pd.DataFrame) -> None:
+        """
+        Insere novos registros na tabela sales_ml a partir de um DataFrame do pandas.
+
+        Args:
+            df: DataFrame contendo os registros a serem inseridos
+        """
+        try:
+            records = [
+                {str(k): v for k, v in record.items()}
+                for record in df.to_dict(orient="records")
+            ]
+            response = self._supabase.table("sales_ml").insert(records).execute()
+
+            if hasattr(response, "data") and response.data:  # type: ignore
+                log.info(f"{len(response.data)} registros inseridos na tabela sales_ml") # type: ignore
+            else:
+                log.warning("Nenhum registro foi inserido na tabela sales_ml")
+
+        except Exception as e:
+            log.error(f"Erro ao inserir registros na tabela sales_ml: {str(e)}")
+            raise
