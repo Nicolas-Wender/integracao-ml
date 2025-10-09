@@ -13,7 +13,7 @@ class ITokenManager(ABC):
     """Interface para gerenciamento de tokens OAuth."""
 
     @abstractmethod
-    def get_access_token(self, id: str, clear_cache: bool = False) -> str:
+    def get_access_token(self, id: str, clear_cache: bool = False) -> Optional[str]:
         """
         Obtém token de acesso válido para a loja.
 
@@ -22,24 +22,24 @@ class ITokenManager(ABC):
             clear_cache: Se True, limpa o cache antes de buscar o token
 
         Returns:
-            Token de acesso válido
+            Token de acesso válido ou None quando indisponível
         """
         pass
 
     @abstractmethod
-    def is_token_invalid(self, validade: str) -> bool:
+    def is_token_invalid(self, cred: Dict[str, Any]) -> bool:
         """
         Verifica se o token atual é válido.
 
         Args:
-            validade: Data de validade do token
+            cred: Credenciais contendo token, refresh token e validade
         Returns:
             True se o token é inválido, False caso contrário
         """
         pass
 
     @abstractmethod
-    def refresh_token(self, id: str, cred: pd.Series) -> Dict[str, Any]:
+    def refresh_token(self, id: str, cred: Dict[str, Any]) -> Dict[str, Any]:
         """
         Atualiza o token de acesso usando o refresh token.
 

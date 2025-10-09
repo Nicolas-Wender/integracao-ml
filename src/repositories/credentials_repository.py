@@ -49,7 +49,7 @@ class CredentialsRepository(ICredentialsRepository):
             # Consulta a tabela do Supabase filtrando pelo id
             response = (
                 self._supabase.table("credenciais_ml")
-                .select("*")
+                .select("access_token, refresh_token, validade, client_id")
                 .eq("id", id)
                 .execute()
             )
@@ -144,7 +144,7 @@ class CredentialsRepository(ICredentialsRepository):
         try:
             response = (
                 self._supabase.table("credenciais_ml")
-                .select("client_id,client_secret,refresh_token")
+                .select("refresh_token, client_id")
                 .eq("id", id)
                 .execute()
             )
@@ -161,10 +161,8 @@ class CredentialsRepository(ICredentialsRepository):
 
             return {
                 "grant_type": "refresh_token",
-                "client_id": cred.get("client_id", ""),
-                "client_secret": self._encryption_service.decrypt(
-                    cred.get("client_secret", "")
-                ),
+                "client_id": os.environ.get("ML_APP_ID"),
+                "client_secret": os.environ.get("ML_APP_SECRET"),
                 "refresh_token": cred.get("refresh_token", ""),
             }
 
@@ -245,7 +243,7 @@ class CredentialsRepository(ICredentialsRepository):
             response = self._supabase.table("sales_ml").insert(records).execute()
 
             if hasattr(response, "data") and response.data:  # type: ignore
-                log.info(f"{len(response.data)} registros inseridos na tabela sales_ml") # type: ignore
+                log.info(f"{len(response.data)} registros inseridos na tabela sales_ml")  # type: ignore
             else:
                 log.warning("Nenhum registro foi inserido na tabela sales_ml")
 

@@ -58,6 +58,10 @@ class Client:
         """
         try:
             access_token = self._token_manager.get_access_token(id)
+            if not access_token:
+                log.error(f"Access token indisponível para {id}. Abortando requisição.")
+                return {}
+
             refresh = False
 
             for attempt in range(self._max_retries):
@@ -98,6 +102,12 @@ class Client:
                                 id, clear_cache=True
                             )
                             refresh = True
+
+                        if not access_token:
+                            log.error(
+                                f"Novo access token indisponível para {id} após tentativa de refresh."
+                            )
+                            return {}
 
                     continue
                 return result["response"]

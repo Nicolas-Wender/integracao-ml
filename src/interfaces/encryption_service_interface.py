@@ -11,7 +11,7 @@ class IEncryptionService(ABC):
     """Interface para serviços de criptografia."""
 
     @abstractmethod
-    def encrypt(self, data: str) -> bytes:
+    def encrypt(self, data: str) -> str:
         """
         Criptografa uma string.
 
@@ -19,17 +19,17 @@ class IEncryptionService(ABC):
             data: String a ser criptografada
 
         Returns:
-            Bytes criptografados
+            Texto criptografado em base64 compatível com CryptoJS
         """
         pass
 
     @abstractmethod
-    def decrypt(self, encrypted_data: bytes) -> str:
+    def decrypt(self, encrypted_data: str) -> str:
         """
         Descriptografa uma string criptografada.
 
         Args:
-            encrypted_data: Bytes criptografados
+            encrypted_data: Texto criptografado em base64
 
         Returns:
             String original
