@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict
 import pandas as pd
 
+
 class ICredentialsRepository(ABC):
     """Interface para repositório de credenciais."""
 
@@ -78,5 +79,41 @@ class ICredentialsRepository(ABC):
 
         Args:
             df: DataFrame contendo os registros a serem inseridos
+        """
+        pass
+
+    @abstractmethod
+    def delete_ads_by_id_and_date(
+        self, id: str, start_date: str, end_date: str
+    ) -> None:
+        """
+        Exclui registros da tabela ads_ml cujo id seja igual ao argumento e date_created esteja entre start_date e end_date.
+
+        Args:
+            start_date: Data inicial (string, formato compatível com Supabase)
+            end_date: Data final (string, formato compatível com Supabase)
+        """
+        pass
+
+    @abstractmethod
+    def insert_ads_from_dataframe(self, df: pd.DataFrame) -> None:
+        """
+        Insere novos registros na tabela ads_ml a partir de um DataFrame do pandas.
+
+        Args:
+            df: DataFrame contendo os registros a serem inseridos
+        """
+        pass
+
+    @abstractmethod
+    def get_unique_mlbs_by_id(self, id: str) -> list:
+        """
+        Retorna todos os MLBs únicos da tabela sales_ml de acordo com o id fornecido.
+
+        Args:
+            id: Identificador da loja
+
+        Returns:
+            Lista com os MLBs únicos
         """
         pass

@@ -250,3 +250,85 @@ class CredentialsRepository(ICredentialsRepository):
         except Exception as e:
             log.error(f"Erro ao inserir registros na tabela sales_ml: {str(e)}")
             raise
+
+    def delete_ads_by_id_and_date(
+        self, id: str, start_date: str, end_date: str
+    ) -> None:
+        """
+        Exclui registros da tabela ads_ml cujo id seja igual ao argumento e date_created esteja entre start_date e end_date.
+
+        Args:
+            start_date: Data inicial (string, formato compatível com Supabase)
+            end_date: Data final (string, formato compatível com Supabase)
+        """
+        try:
+            response = (
+                self._supabase.table("ads_ml")
+                .delete()
+                .eq("id", id)
+                .gte("date", start_date)
+                .lte("date", end_date)
+                .execute()
+            )
+            if hasattr(response, "data") and response.data:  # type: ignore
+                log.info(f"Registros excluídos para entre {start_date} e {end_date}")
+            else:
+                log.warning(
+                    f"Nenhum registro excluído para entre {start_date} e {end_date}"
+                )
+        except Exception as e:
+            log.error(f"Erro ao excluir registros para: {str(e)}")
+            raise
+
+    def insert_ads_from_dataframe(self, df: pd.DataFrame) -> None:
+        """
+        Insere novos registros na tabela ads_ml a partir de um DataFrame do pandas.
+
+        Args:
+            df: DataFrame contendo os registros a serem inseridos
+        """
+        try:
+            records = [
+                {str(k): v for k, v in record.items()}
+                for record in df.to_dict(orient="records")
+            ]
+            response = self._supabase.table("ads_ml").insert(records).execute()
+
+            if hasattr(response, "data") and response.data:  # type: ignore
+                log.info(f"{len(response.data)} registros inseridos na tabela ads_ml")  # type: ignore
+            else:
+                log.warning("Nenhum registro foi inserido na tabela ads_ml")
+
+        except Exception as e:
+            log.error(f"Erro ao inserir registros na tabela ads_ml: {str(e)}")
+            raise
+
+    def get_unique_mlbs_by_id(self, id: str) -> list:
+        """
+        Retorna todos os MLBs únicos da tabela sales_ml de acordo com o id fornecido.
+
+        Args:
+            id: Identificador da loja
+
+        Returns:
+            Lista com os MLBs únicos
+        """
+        try:
+            response = (
+                self._supabase.table("sales_ml").select("mlb").eq("id", id).execute()
+            )
+
+            if not hasattr(response, "data") or len(response.data) == 0:  # type: ignore
+                log.warning(f"Nenhum MLB encontrado para o id: {id}")
+                return []
+
+            # Extrai os MLBs únicos da resposta
+            mlbs = [item["mlb"] for item in response.data if item.get("mlb")]  # type: ignore
+            unique_mlbs = list(set(mlbs))  # Remove duplicados
+
+            log.info(f"{len(unique_mlbs)} MLBs únicos encontrados para o id: {id}")
+            return unique_mlbs
+
+        except Exception as e:
+            log.error(f"Erro ao buscar MLBs únicos para {id}: {str(e)}")
+            raise
